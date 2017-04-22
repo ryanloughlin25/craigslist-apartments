@@ -18,7 +18,7 @@ for name, filter_set in filter_sets.items():
 
     for result in results:
         data = {
-            'text': '{}: {}\n{}'.format(
+            'text': '{}\n{}: {}\n{}'.format(
                 name,
                 result['price'],
                 result['name'],
