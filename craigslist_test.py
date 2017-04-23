@@ -1,3 +1,4 @@
+import os
 from requests import post
 from json import dumps
 from craigslist import CraigslistHousing
@@ -5,9 +6,14 @@ from filter_sets import filter_sets
 import pymongo
 
 
-url = 'https://hooks.slack.com/services/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'
-client = pymongo.MongoClient('localhost', 27017)
+SLACK_URL = os.environ['SLACK_URL']
+MONGO_HOST = os.environ['MONGO_HOST']
+MONGO_PORT = int(os.environ['MONGO_PORT'])
+MONGO_COLLECTION = os.environ['MONGO_COLLECTION']
+
+client = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
 db = client.craigslist
+collection = getattr(db, MONGO_COLLECTION)
 
 for name, filter_set in filter_sets.items():
     cl = CraigslistHousing(
@@ -21,7 +27,7 @@ for name, filter_set in filter_sets.items():
 
     for result in results:
         db_key = {'id': result['id']}
-        existing = db.apartments.find_one(db_key)
+        existing = collection.find_one(db_key)
         if not existing:
             data = {
                 'text': '{}\n{}: {}\n{}'.format(
@@ -32,8 +38,8 @@ for name, filter_set in filter_sets.items():
                 ),
             }
             response = post(
-                url,
+                SLACK_URL,
                 data=dumps(data),
                 headers={'Content-Type': 'application/json'},
             )
-        db.apartments.update(db_key, result, True)
+        collection.update(db_key, result, True)
