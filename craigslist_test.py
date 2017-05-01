@@ -23,7 +23,7 @@ for name, filter_set in filter_sets.items():
         filters=filter_set,
     )
 
-    results = list(cl.get_results(sort_by='newest', geotagged=True, limit=1))
+    results = list(cl.get_results(sort_by='newest', geotagged=True, limit=10))
 
     for result in results:
         db_key = {'id': result['id']}
