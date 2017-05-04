@@ -4,13 +4,11 @@ filter_sets = {
         'min_price': 2000,
         'bedrooms': 2,
         'zip_code': 94118,
-        'no_smoking': True,
     },
     'Marina': {
         'max_price': 4000,
         'min_price': 2000,
         'bedrooms': 2,
         'zip_code': 94123,
-        'no_smoking': True,
     },
 }
