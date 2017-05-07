@@ -30,8 +30,8 @@ def lambda_handler(event, context):
     s3 = boto3.client('s3')
     previous_apartments = loads(
         s3.get_object(
-            Bucket='ryan-loughlin-craigslist',
-            Key='dev_apartments.json',
+            Bucket=os.environ['S3_BUCKET'],
+            Key=os.environ['S3_KEY'],
         )['Body'].read()
     )
 
@@ -54,8 +54,8 @@ def lambda_handler(event, context):
                 post_to_slack(name, result)
 
     s3.put_object(
-        Bucket='ryan-loughlin-craigslist',
-        Key='dev_apartments.json',
+        Bucket=os.environ['S3_BUCKET'],
+        Key=os.environ['S3_KEY'],
         Body=dumps(previous_apartments),
     )
 
