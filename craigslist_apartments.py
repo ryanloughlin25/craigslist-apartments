@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             filters=filter_set,
         )
 
-        results = list(cl.get_results(sort_by='newest', geotagged=True, limit=10))
+        results = list(cl.get_results(sort_by='newest', geotagged=True, limit=100))
 
         for result in results:
             try:
