@@ -26,6 +26,16 @@ def post_to_slack(name, result):
     )
 
 
+def get_index(fields, list_of_dicts, dict_to_find):
+    for field in fields:
+        try:
+            index = list(map(itemgetter(field), list_of_dicts)).index(dict_to_find[field])
+            return index
+        except ValueError as e:
+            pass
+    return None
+
+
 def lambda_handler(event, context):
     s3 = boto3.client('s3')
     previous_apartments = loads(
@@ -46,10 +56,10 @@ def lambda_handler(event, context):
         results = list(cl.get_results(sort_by='newest', geotagged=True, limit=100))
 
         for result in results:
-            try:
-                index = list(map(itemgetter('id'), previous_apartments)).index(result['id'])
+            index = get_index(['id', 'name'], previous_apartments, result)
+            if index:
                 previous_apartments[index] = result
-            except ValueError as e:
+            else:
                 previous_apartments.append(result)
                 post_to_slack(name, result)
 
