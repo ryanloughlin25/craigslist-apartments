@@ -1,5 +1,6 @@
 import os
 import boto3
+import botocore
 from requests import post
 from json import dumps, loads
 from craigslist import CraigslistHousing
@@ -8,6 +9,9 @@ from operator import itemgetter
 
 
 SLACK_URL = os.environ['SLACK_URL']
+S3_BUCKET = os.environ['S3_BUCKET']
+S3_KEY = os.environ['S3_KEY']
+RESULTS_PER_FILTER = int(os.environ['RESULTS_PER_FILTER'])
 
 
 def post_to_slack(name, result):
@@ -26,14 +30,33 @@ def post_to_slack(name, result):
     )
 
 
-def lambda_handler(event, context):
+def get_previous_apartments():
     s3 = boto3.client('s3')
-    previous_apartments = loads(
-        s3.get_object(
-            Bucket=os.environ['S3_BUCKET'],
-            Key=os.environ['S3_KEY'],
-        )['Body'].read()
+    try:
+        return loads(
+            s3.get_object(
+                Bucket=S3_BUCKET,
+                Key=S3_KEY,
+            )['Body'].read()
+        )
+    except botocore.errorfactory.ClientError as client_error:
+        if client_error.response['Error']['Code'] == 'NoSuchKey':
+            return []
+        else:
+            raise
+
+
+def put_apartments(apartments):
+    s3 = boto3.client('s3')
+    s3.put_object(
+        Bucket=S3_BUCKET,
+        Key=S3_KEY,
+        Body=dumps(apartments),
     )
+
+
+def lambda_handler(event, context):
+    apartments = get_previous_apartments()
 
     for name, filter_set in filter_sets.items():
         cl = CraigslistHousing(
@@ -43,21 +66,26 @@ def lambda_handler(event, context):
             filters=filter_set,
         )
 
-        results = list(cl.get_results(sort_by='newest', geotagged=True, limit=100))
+        results = list(
+                cl.get_results(
+                    sort_by='newest',
+                    geotagged=True,
+                    limit=RESULTS_PER_FILTER,
+                )
+            )
 
         for result in results:
             try:
-                index = list(map(itemgetter('id'), previous_apartments)).index(result['id'])
-                previous_apartments[index] = result
+                # update previously seen apartment listing
+                apartment_ids = map(itemgetter('id'), apartments)
+                index = list(apartment_ids).index(result['id'])
+                apartments[index] = result
             except ValueError as e:
-                previous_apartments.append(result)
+                # post new apartment listing
+                apartments.append(result)
                 post_to_slack(name, result)
 
-    s3.put_object(
-        Bucket=os.environ['S3_BUCKET'],
-        Key=os.environ['S3_KEY'],
-        Body=dumps(previous_apartments),
-    )
+    put_apartments(apartments)
 
 
 if __name__ == '__main__':
