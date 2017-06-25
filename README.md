@@ -39,7 +39,7 @@ aws has documentation for most of the process, I will comment on the parts speci
 * `SLACK_URL` - a url for an incoming webhooking in slack.
 * `S3_BUCKET` - s3 bucket name.  Bucket must exist before running the code.
 * `S3_KEY` - s3 key name
-* `REQUESTS_PER_FILTER` - number of results to download from craigslist each time the code is executed.  It will download this many for each filter every time, but only post new ones to slack.  This means that if there are no new apartment listings since the last run, then it will download them and not post anything to slack.
+* `RESULTS_PER_FILTER` - number of results to download from craigslist each time the code is executed.  It will download this many for each filter every time, but only post new ones to slack.  This means that if there are no new apartment listings since the last run, then it will download them and not post anything to slack.
 
 ### trigger
 I recommend using a CloudWatch Events trigger to run at regular intervals.  The interval should be determined based on how frequently you want notifications, your apartment filters, and `REQUESTS_PER_FILTER`.
