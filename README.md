@@ -13,7 +13,7 @@ The code can be run locally (although it will still make requests to s3 and crai
 Instructions for building a lambda function can be found in the [aws docs](http://docs.aws.amazon.com/lambda/latest/dg/lambda-app.html).  I will describe my own process for deployment.  I chose to upload a zip to lambda because of the dependency on python-craigslist.
 
 ## filters
-The filters are currently setup for 2 bedroom apartments in the Inner Richmond and Marina districts.  They are stored as dictionaries in `filters.py`.  Edit the filters based on your interests or you can deploy it as is to see what it does and come back to the filters later.  The python-craigslist README describes how to use a python interpreter to list the available filters.
+The example `filter_sets.json` is currently setup for 2 bedroom apartments in the Inner Richmond and Marina districts.  Edit the filters based on your interests or you can deploy it as is to see what it does and come back to the filters later.  The python-craigslist README describes how to use a python interpreter to list the available filters.  This file should be uploaded to S3.
 
 ## create a lambda deployment package (zip file)
 1. Create a [virtual environment](https://virtualenv.pypa.io/en/stable/) called `env` in the root of the repository.
@@ -39,6 +39,7 @@ aws has documentation for most of the process, I will comment on the parts speci
 * `SLACK_URL` - a url for an incoming webhooking in slack.
 * `S3_BUCKET` - s3 bucket name.  Bucket must exist before running the code.
 * `S3_KEY` - s3 key name
+* `S3_FILTERS_KEY` - s3 key for filter sets json file
 * `RESULTS_PER_FILTER` - number of results to download from craigslist each time the code is executed.  It will download this many for each filter every time, but only post new ones to slack.  This means that if there are no new apartment listings since the last run, then it will download them and not post anything to slack.
 
 ### trigger

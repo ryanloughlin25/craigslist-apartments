@@ -2,15 +2,15 @@ import os
 import boto3
 import botocore
 from requests import post
-from json import dumps, loads
+from json import dumps, loads, load
 from craigslist import CraigslistHousing
-from filter_sets import filter_sets
 from operator import itemgetter
 
 
 SLACK_URL = os.environ['SLACK_URL']
 S3_BUCKET = os.environ['S3_BUCKET']
 S3_KEY = os.environ['S3_KEY']
+S3_FILTERS_KEY = os.environ['S3_FILTERS_KEY']
 RESULTS_PER_FILTER = int(os.environ['RESULTS_PER_FILTER'])
 
 
@@ -55,8 +55,19 @@ def put_apartments(apartments):
     )
 
 
+def get_filters():
+    s3 = boto3.client('s3')
+    return loads(
+        s3.get_object(
+            Bucket=S3_BUCKET,
+            Key=S3_FILTERS_KEY,
+        )['Body'].read().decode('utf-8')
+    )
+
+
 def lambda_handler(event, context):
     apartments = get_previous_apartments()
+    filter_sets = get_filters()
 
     for name, filter_set in filter_sets.items():
         cl = CraigslistHousing(

@@ -1,3 +1,4 @@
 env
 __pycache__
 *.swp
+filter_sets.json
