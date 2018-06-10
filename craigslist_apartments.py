@@ -37,7 +37,7 @@ def get_previous_apartments():
             s3.get_object(
                 Bucket=S3_BUCKET,
                 Key=S3_KEY,
-            )['Body'].read()
+            )['Body'].read().decode('utf-8')
         )
     except botocore.errorfactory.ClientError as client_error:
         if client_error.response['Error']['Code'] == 'NoSuchKey':
